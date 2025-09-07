@@ -5,76 +5,13 @@ import pickle
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 
-# --- Page Configuration ---
+# --- Page Configuration (Theme is now in config.toml) ---
 st.set_page_config(
     page_title="Rainfall Prediction Pro",
     page_icon="🌌",
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
-# --- Custom CSS for Styling ---
-st.markdown("""
-<style>
-    .main {
-        background-color: #f0f2f6; /* Fallback background */
-    }
-    /* New dark blue gradient background */
-    .stApp {
-        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-        color: white;
-    }
-    .st-emotion-cache-16txtl3 {
-        padding: 2rem 1rem;
-    }
-    .st-emotion-cache-1y4p8pa {
-        width: 100%;
-        padding: 1rem 0;
-    }
-    h1, h2, h3, h4 {
-        color: #FFFFFF;
-        font-family: 'sans-serif';
-    }
-    .stButton>button {
-        background-color: #ffffff;
-        color: #2c5364;
-        border-radius: 50px;
-        border: 1px solid #2c5364;
-        padding: 12px 28px;
-        font-size: 16px;
-        font-weight: bold;
-        transition: all 0.3s ease;
-    }
-    .stButton>button:hover {
-        background-color: #2c5364;
-        color: white;
-        border: 1px solid white;
-    }
-    .prediction-card {
-        background-color: rgba(255, 255, 255, 0.1);
-        padding: 2.5rem;
-        border-radius: 15px;
-        text-align: center;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-    }
-    .info-card {
-        background-color: rgba(255, 255, 255, 0.05);
-        padding: 1.5rem;
-        border-radius: 15px;
-        margin-bottom: 1rem;
-    }
-    /* Style sidebar */
-    .st-emotion-cache-10oheav {
-        background-color: rgba(0, 0, 0, 0.2);
-        border-right: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .st-emotion-cache-1v0mbdj { /* Sidebar header color */
-        color: #FFFFFF;
-    }
-</style>
-""", unsafe_allow_html=True)
-
 
 # --- Initialize Session State for Sliders ---
 if 'pressure' not in st.session_state:
@@ -167,15 +104,13 @@ with col1:
                  st.error("Could not load the model from the .pkl file.")
             else:
                 prediction = model.predict(input_df)
-                with st.container():
-                    st.markdown('<div class="prediction-card">', unsafe_allow_html=True)
+                with st.container(border=True):
                     if prediction[0] == 1:
-                        st.markdown('<h1>☔<br>It will likely rain!</h1>', unsafe_allow_html=True)
+                        st.markdown('<h1 style="text-align: center;">☔<br>It will likely rain!</h1>', unsafe_allow_html=True)
                         st.info("💡 Suggestion: Don't forget to carry an umbrella!")
                     else:
-                        st.markdown('<h1>☀️<br>It will likely be dry!</h1>', unsafe_allow_html=True)
+                        st.markdown('<h1 style="text-align: center;">☀️<br>It will likely be dry!</h1>', unsafe_allow_html=True)
                         st.info("💡 Suggestion: A great day for outdoor activities!")
-                    st.markdown('</div>', unsafe_allow_html=True)
 
         except FileNotFoundError:
             st.error("Model file not found. Ensure 'rainfall_prediction_model.pkl' is present.")
@@ -214,21 +149,19 @@ with col1:
         for i in range(5):
             day = today + timedelta(days=i + 1)
             with forecast_cols[i]:
-                st.markdown(f"<div style='text-align: center; padding: 10px; background-color: rgba(255,255,255,0.1); border-radius: 10px;'>", unsafe_allow_html=True)
-                st.markdown(f"**{day.strftime('%a')}**")
-                if np.random.rand() > 0.5:
-                    st.markdown("<h2 style='font-size: 2.5em;'>☀️</h2>", unsafe_allow_html=True)
-                    temp = f"{np.random.randint(int(st.session_state.dewpoint)+5, int(st.session_state.dewpoint)+15)}°C"
-                else:
-                    st.markdown("<h2 style='font-size: 2.5em;'>🌧️</h2>", unsafe_allow_html=True)
-                    temp = f"{np.random.randint(int(st.session_state.dewpoint), int(st.session_state.dewpoint)+10)}°C"
-                st.write(temp)
-                st.markdown("</div>", unsafe_allow_html=True)
-
+                with st.container(border=True):
+                    st.markdown(f"<div style='text-align: center;'><b>{day.strftime('%a')}</b></div>", unsafe_allow_html=True)
+                    if np.random.rand() > 0.5:
+                        st.markdown("<div style='font-size: 2.5em; text-align: center;'>☀️</div>", unsafe_allow_html=True)
+                        temp = f"{np.random.randint(int(st.session_state.dewpoint)+5, int(st.session_state.dewpoint)+15)}°C"
+                    else:
+                        st.markdown("<div style='font-size: 2.5em; text-align: center;'>🌧️</div>", unsafe_allow_html=True)
+                        temp = f"{np.random.randint(int(st.session_state.dewpoint), int(st.session_state.dewpoint)+10)}°C"
+                    st.markdown(f"<div style='text-align: center;'>{temp}</div>", unsafe_allow_html=True)
+        
 with col2:
-    st.subheader("Current Weather Inputs")
-    with st.container():
-        st.markdown('<div class="info-card">', unsafe_allow_html=True)
+    with st.container(border=True):
+        st.subheader("Current Weather Inputs")
         
         # Data Table
         st.markdown("##### Input Values")
@@ -245,7 +178,7 @@ with col2:
               name='Input Values'
         ))
         fig.update_layout(
-          polar=dict(radialaxis=dict(visible=True, range=[0, 100])), # Normalized-like range for better visuals
+          polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
           showlegend=False,
           paper_bgcolor='rgba(0,0,0,0)',
           plot_bgcolor='rgba(0,0,0,0)',
@@ -254,7 +187,6 @@ with col2:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown('</div>', unsafe_allow_html=True)
 
 # --- Footer ---
 st.markdown("---")
